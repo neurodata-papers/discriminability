@@ -1,23 +1,6 @@
----
-title: "discrimability"
-author: "Greg Kiar"
-date: "January 13, 2017"
-output:
-  html_document:
-    fig_caption: yes
-    fig_height: 6
-    fig_width: 11
-    highlight: pygments
-    keep_md: yes
-    number_sections: yes
-    theme: cerulean
-    toc: yes
-    toc_depth: 3
-  pdf_document:
-    fig_caption: yes
-    keep_tex: yes
-    number_sections: yes
----
+# discrimability
+Greg Kiar  
+January 13, 2017  
 
 # Discriminability in a Nutshell
 
@@ -31,61 +14,17 @@ the mean rank of the distribution.
 Before getting started, we will define a few helpful functions and variables which will streamline
 this process.
 
-```{r load, warning=FALSE}
+
+```r
 library(abind)
 library(rmarkdown)
 library(knitr)
 ```
 
-```{r knitr-setup, include=FALSE, results='asis'}
-### The following options and figure numbering functions
-### were setup by Youngser Park
-knitr::opts_chunk$set(cache=TRUE, autodep=TRUE)
-dep_auto() # figure out dependencies automatically
-opts_chunk$set(cache=FALSE,echo=TRUE,warning=FALSE,message=FALSE,
-               comment="#",
-               fig.path='./Figures/',
-               dpi=227,dev=c('png','pdf'))
 
-opts_knit$set(aliases=c(h='fig.height', w='fig.width', 
-                        cap='fig.cap', scap='fig.scap'))
-opts_knit$set(eval.after = c('fig.cap','fig.scap'))
-knit_hooks$set(document = function(x) {
-  gsub('(\\\\end\\{knitrout\\}[\n]+)', '\\1\\\\noindent ', x)
-})
-#opts_knit$set(animation.fun = hook_scianimator)
 
-knit_hooks$set(plot = function(x, options) {
-       paste('<figure><img src="',
-             opts_knit$get('base.url'), paste(x, collapse = '.'),
-             '"><figcaption>', options$fig.cap, '</figcaption></figure>',
-             sep = '')
- })
- 
- fn = local({
-   i = 0
-   function(x) {
-     i <<- i + 1
-     paste('Figure ', i, ': ', x, sep = '')
-   }
- })
 
- fig <- local({
-    i <- 0
-    ref <- list()
-    list(
-        cap=function(refName, text) {
-            i <<- i + 1
-            ref[[refName]] <<- i
-            paste("<b>Figure ", i, ": ", text, "</b><br><br>", sep="")
-        },
-        ref=function(refName) {
-            ref[[refName]]
-        })
-})
-```
-
-```{r setup}
+```r
 lweight <- 4
 len <- 500
 nsamples <- 40
@@ -172,24 +111,48 @@ simulate_shape <- function(fn){
 We will start by sampling data from the circle distribution and reconstructing the shapes
 from each set of samples.
 
-```{r circle_sampling, fig.align='center'}
+
+```r
 # pdf("circle_plot.pdf", width=20, height=10)
 vals <- simulate_shape(circle)
+```
+
+<figure><img src="./Figures/circle_sampling-1.png"><figcaption></figcaption></figure>
+
+```r
 # dev.off()
 labels <- vals[[1]]
 data <- vals[[2]]
 ```
 
 The same process is then repeated for the square distribution.
-```{r square_sampling, fig.align='center'}
+
+```r
 vals <- simulate_shape(square)
+```
+
+<figure><img src="./Figures/square_sampling-1.png"><figcaption></figcaption></figure>
+
+```r
 labels <- c(labels, vals[[1]])
 data <- abind(data, vals[[2]])
 ```
 
 Now we have a data matrix which contains `x` and `y` sampled values, and a list of labels
 for each sample identifying whether it belongs to the "circle" or "square" distribution.
-```{r data}
+
+```r
 print(labels)
+```
+
+```
+# [1] "circle" "circle" "circle" "square" "square" "square"
+```
+
+```r
 print(dim(data))
+```
+
+```
+# [1]  2 40  6
 ```
