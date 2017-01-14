@@ -1,0 +1,102 @@
+---
+title: "discrimability"
+author: "Greg Kiar"
+date: "January 13, 2017"
+output: html_document
+---
+
+# Discriminability in a Nutshell
+
+We are going to generate data from two classes (circles and squares), and demonstrate the
+strength of discriminability through evaluating different sampling or processing strategies.
+We construct our two class distributions, sample points from them, reconstruct the object,
+compute the discriminability of the processing. Discriminability is: computing distance between
+all pairs of objects, rank the distances, compute the histogram of same-class ranks, and compute
+the mean rank of the distribution.
+
+Before getting started, we will define a few helpful functions and variables which will streamline
+this process.
+
+```{r}
+lweight <- 4
+len <- 500
+nsamples <- 40
+nsims <- 3
+noise1 <- 0.15
+darkcol <- '#28282e'
+lightcol <- '#98929e'
+
+circle <- function(){
+  theta <- seq(from = 0, to = 2*pi - pi/len, by = 2*pi/len)
+  x <- cos(theta)
+  y <- sin(theta)
+  circ <- list(x, y)
+}
+
+square <- function(){
+  range <- seq(from = -1, to = 1, by = 2/(len/4))
+  static <- rep(1, each = len/4)
+  x <- c(range, static, -range, -static) 
+  y <- c(static, -range, -static, range)
+  sqr <- list(x, y)
+}
+
+shape_plot <- function(xs, ys, typ){
+  size <- lweight
+  if (typ == 'p'){
+    size <- size/3
+  }
+  plot(xs, ys, type=typ, axes=FALSE, xlab='', ylab='', pch=20, asp=1, lwd=size, col=darkcol)
+  if (typ == 'l'){
+    polygon(x=xs, y=ys, col=lightcol)
+  }
+}
+
+sample1 <- function(data, n){
+  pts <- sort(floor(runif(n, min=1, max=len)))
+  xs <- data[[1]]
+  x <- xs[pts] + noise1*runif(n, min=-1, max=1)
+  x <- c(x, x[1])
+  ys <- data[[2]]
+  y <- ys[pts] + noise1*runif(n, min=-1, max=1)
+  y <- c(y, y[1])
+  samp <- list(x, y)
+}
+
+simulate_shape <- function(fn){
+  layout(matrix(c(1,2,3, 1,4,5, 1,6,7), 3, 3, byrow = TRUE))
+  par(xpd=NA)
+  shape <- fn()
+  shape_plot(shape[[1]], shape[[2]], 'l')
+  
+  arrows(x0=1.5, x1=2.5, y0=1, y1=2, length=0.1, lwd = lweight)
+  arrows(x0=1.5, x1=2.5, y0=0, y1=0, length=0.1, lwd = lweight)
+  arrows(x0=1.5, x1=2.5, y0=-1, y1=-2, length=0.1, lwd = lweight)
+  text(x=1.9, y=1.8, expression('s'[1]^'a'), cex=2)
+  text(x=1.9, y=0.3, expression('s'[2]^'a'), cex=2)
+  text(x=1.9, y=-1.8, expression('s'[3]^'a'), cex=2)
+
+  label <- rep(as.character(substitute(circle)), nsims)
+  for (i in 1:nsims){
+    samp <- sample1(shape, nsamples)
+    shape_plot(samp[[1]], samp[[2]], 'p')
+    arrows(x0=4, x1=8, y0=0, y1=0, length=0.1, lwd=lweight)
+    text(x=6, y=1., bquote(p[.(i)]^'a'), cex=2)
+    shape_plot(samp[[1]], samp[[2]], 'l')
+  }
+}
+```
+
+## Sampling shapes
+
+We will start by sampling data from the circle distribution and reconstructing the shapes
+from each set of samples.
+
+```{r, fig.align='center', out.height=1000, out.width=1000}
+simulate_shape(circle)
+```
+
+The same process is then repeated for the square distribution.
+```{r, fig.align='center', out.height=1000, out.width=1000}
+simulate_shape(square)
+```
