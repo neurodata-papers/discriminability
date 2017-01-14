@@ -18,6 +18,8 @@ Before getting started, we will define a few helpful functions and variables whi
 this process.
 
 ```{r}
+library('abind')
+
 lweight <- 4
 len <- 500
 nsamples <- 40
@@ -76,14 +78,19 @@ simulate_shape <- function(fn){
   text(x=1.9, y=0.3, expression('s'[2]^'a'), cex=2)
   text(x=1.9, y=-1.8, expression('s'[3]^'a'), cex=2)
 
-  label <- rep(as.character(substitute(circle)), nsims)
+  label <- rep(as.character(substitute(fn)), nsims)
+  data <- array(data=NA, c(2, nsamples, nsims))
+  dim(data)
   for (i in 1:nsims){
     samp <- sample1(shape, nsamples)
     shape_plot(samp[[1]], samp[[2]], 'p')
     arrows(x0=4, x1=8, y0=0, y1=0, length=0.1, lwd=lweight)
     text(x=6, y=1., bquote(p[.(i)]^'a'), cex=2)
     shape_plot(samp[[1]], samp[[2]], 'l')
+    data[1, ,i] <- samp[[1]][1:nsamples]
+    data[2, ,i] <- samp[[2]][1:nsamples]
   }
+  values <- list(label, data)
 }
 ```
 
@@ -93,10 +100,21 @@ We will start by sampling data from the circle distribution and reconstructing t
 from each set of samples.
 
 ```{r, fig.align='center', out.height=1000, out.width=1000}
-simulate_shape(circle)
+vals <- simulate_shape(circle)
+labels <- vals[[1]]
+data <- vals[[2]]
 ```
 
 The same process is then repeated for the square distribution.
 ```{r, fig.align='center', out.height=1000, out.width=1000}
-simulate_shape(square)
+vals <- simulate_shape(square)
+labels <- c(labels, vals[[1]])
+data <- abind(data, vals[[2]])
+```
+
+Now we have a data matrix which contains `x` and `y` sampled values, and a list of labels
+for each sample identifying whether it belongs to the "circle" or "square" distribution.
+```{r}
+print(labels)
+print(dim(data))
 ```
