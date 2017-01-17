@@ -144,8 +144,9 @@ distances <- function(data){
   cols <- colorRampPalette(c("green", "yellow", "red"))(n = 299)
   heatmap.2(diff, cellnote=round(diff,1), Colv=NA, Rowv=NA, trace="none",
             density.info="none", notecol="black", col=cols, cexRow=tsize,
-            cexCol=tsize, notecex=tsize, labRow="", labCol="", key=FALSE)
-  
+            cexCol=tsize, notecex=tsize, labRow="", labCol="", key=FALSE,
+            lwid=c(.5,6), lhei=c(.5,6), margins=c(4.5,4.5))
+
 }
 
 simulate_shape <- function(fn){
@@ -213,5 +214,4 @@ print(labels)
 print(dim(data))
 
 diff <- distances(data)
-
 ```
