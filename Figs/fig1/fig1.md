@@ -19,6 +19,19 @@ this process.
 library(abind)
 library(rmarkdown)
 library(knitr)
+library(RColorBrewer)
+library(gplots)
+```
+
+```
+## 
+## Attaching package: 'gplots'
+```
+
+```
+## The following object is masked from 'package:stats':
+## 
+##     lowess
 ```
 
 
@@ -71,6 +84,20 @@ sample1 <- function(data, n){
   samp <- list(x, y)
 }
 
+distances <- function(data){
+  diff <- matrix(data=NA, nrow=2*nsims, ncol=2*nsims)
+  for (i in 1:(2*nsims)){
+    for (j in 1:(2*nsims)){
+      diff[i,j] <- norm(data[,,i] - data[,,j], '2')
+    }
+  }
+  cols <- colorRampPalette(c("green", "yellow", "red"))(n = 299)
+  heatmap.2(diff, cellnote=round(diff,1), Colv=NA, Rowv=NA, trace="none",
+            density.info="none", notecol="black", col=cols, cexRow=tsize,
+            cexCol=tsize, notecex=tsize, labRow="", labCol="", key=FALSE)
+  
+}
+
 simulate_shape <- function(fn){
   layout(matrix(c(1,2,3, 1,4,5, 1,6,7), 3, 3, byrow = TRUE))
   par(xpd=NA)
@@ -92,7 +119,8 @@ simulate_shape <- function(fn){
   text(x=4.15, y=0.3, bquote(p[.(2)]^'a'), cex=tsize)
   text(x=4.15, y=-1.2, bquote(p[.(3)]^'a'), cex=tsize)
   
-  label <- rep(as.character(substitute(fn)), nsims)
+  # label <- rep(as.character(substitute(fn)), nsims)
+  label <- c()
   data <- array(data=NA, c(2, nsamples, nsims))
   dim(data)
   for (i in 1:nsims){
@@ -101,6 +129,7 @@ simulate_shape <- function(fn){
     shape_plot(samp[[1]], samp[[2]], 'l')
     data[1, ,i] <- samp[[1]][1:nsamples]
     data[2, ,i] <- samp[[2]][1:nsamples]
+    label <- c(label, as.character(substitute(fn)))
   }
   values <- list(label, data)
 }
@@ -140,6 +169,7 @@ data <- abind(data, vals[[2]])
 
 Now we have a data matrix which contains `x` and `y` sampled values, and a list of labels
 for each sample identifying whether it belongs to the "circle" or "square" distribution.
+We can then compute the distance between observations in each class.
 
 ```r
 print(labels)
@@ -156,3 +186,9 @@ print(dim(data))
 ```
 # [1]  2 40  6
 ```
+
+```r
+diff <- distances(data)
+```
+
+<figure><img src="./Figures/heatmap-1.png"><figcaption></figcaption></figure>
