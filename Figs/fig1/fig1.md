@@ -37,9 +37,9 @@ set.seed(123456789)
 ```r
 lweight <- 4
 len <- 500
-nsamples <- 20
+nsamples <- 7
 nsims <- 3
-noise1 <- 0.2
+noise1 <- 0
 tsize <- 4
 nsize <- 3
 darkcol <- '#28282e'
@@ -73,7 +73,7 @@ plotshape <- function(xs, ys, typ){
   if (typ == 'p'){
     size <- size/3
   }
-  plot(xs, ys, type=typ, axes=FALSE, xlab='', ylab='', pch=20, asp=1, lwd=size, col=darkcol)
+  plot(xs, ys, type=typ, axes=FALSE, xlab='', ylab='', pch=20, asp=1, lwd=size, xlim=c(-1, 1), col=darkcol)
   if (typ == 'l'){
     polygon(x=xs, y=ys, col=lightcol)
   }
@@ -238,7 +238,7 @@ print(dim(data))
 ```
 
 ```
-# [1]  2 20  6
+# [1] 2 7 6
 ```
 
 ```r
@@ -274,11 +274,11 @@ plothistogram(ranks, "Rank Distribution Function")
 # 
 #        x              y           
 #  Min.   :0.00   Min.   :0.000000  
-#  1st Qu.:0.25   1st Qu.:0.000000  
-#  Median :0.50   Median :0.000000  
-#  Mean   :0.50   Mean   :0.507304  
-#  3rd Qu.:0.75   3rd Qu.:0.000031  
-#  Max.   :1.00   Max.   :7.978846
+#  1st Qu.:0.25   1st Qu.:0.000481  
+#  Median :0.50   Median :0.081838  
+#  Mean   :0.50   Mean   :0.589257  
+#  3rd Qu.:0.75   3rd Qu.:0.795802  
+#  Max.   :1.00   Max.   :5.319230
 ```
 
 ```r
