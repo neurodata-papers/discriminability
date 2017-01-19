@@ -37,7 +37,7 @@ set.seed(123456789)
 ```r
 lweight <- 4
 len <- 500
-nsamples <- 7
+nsamples <- 8
 nsims <- 3
 noise1 <- 0
 tsize <- 4
@@ -96,19 +96,19 @@ plothistogram <- function(data, title=""){
   hist(data, prob=TRUE, col="grey", breaks=seq(0, 1, l=20), ylab="",
        xlab="", main="", xlim=c(0, 1), axes=FALSE)
   d1 <- density(data, bw=0.05, from=0, to=1)
-  print(d1)
   lines(d1, col="blue", lwd=lweight)
   lines(density(data, bw=0.1, from=0, to=1), lty="dotted", col="darkgreen", lwd=lweight)
 
   mx <- max(h$count)
-  text(x=0.5, y=mx+4, title, cex=nsize)
+  # text(x=0.5, y=mx+4, title, cex=nsize)
   text(x=0, y=-mx/15, "0", cex=nsize-1)
   text(x=1, y=-mx/15, "1", cex=nsize-1)
   text(x=0.5, y=-mx/10, "Rank", cex=tsize-1)
 
   mnr <- mean(data)
+  score <- paste("MNR:", as.character(round(mnr, 2)))
   lines(c(mnr, mnr), c(0, mx+1), col="red", lwd=lweight)
-  text(x=mnr, mx+1.5, paste("MNR:", as.character(round(mnr, 2))), cex=nsize-1)
+  text(x=0.5, y=mx+4, paste(title, score, sep="\n"), cex=nsize)
 }
 ```
 
@@ -238,7 +238,7 @@ print(dim(data))
 ```
 
 ```
-# [1] 2 7 6
+# [1] 2 8 6
 ```
 
 ```r
@@ -264,27 +264,4 @@ plothistogram(ranks, "Rank Distribution Function")
 ```
 
 <figure><img src="./Figures/rankmatrix-2.png"><figcaption></figcaption></figure>
-
-```
-# 
-# Call:
-# 	density.default(x = data, bw = 0.05, from = 0, to = 1)
-# 
-# Data: data (12 obs.);	Bandwidth 'bw' = 0.05
-# 
-#        x              y           
-#  Min.   :0.00   Min.   :0.000000  
-#  1st Qu.:0.25   1st Qu.:0.000481  
-#  Median :0.50   Median :0.081838  
-#  Mean   :0.50   Mean   :0.589257  
-#  3rd Qu.:0.75   3rd Qu.:0.795802  
-#  Max.   :1.00   Max.   :5.319230
-```
-
-```r
-# X <- data.frame(x=ranks)
-# library(ggplot2)
-# g <- ggplot(data = X, aes(x = x))
-# g + geom_histogram(aes(y = ..density..), bins = 50, alpha = 0.25) + geom_density(alpha = 0.25) + scale_x_continuous(limits= c(0, 1))
-```
 
