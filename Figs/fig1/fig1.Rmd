@@ -98,9 +98,9 @@ knit_hooks$set(plot = function(x, options) {
 ```{r setup_vars}
 lweight <- 4
 len <- 500
-nsamples <- 8
+nsamples <- 9
 nsims <- 3
-noise1 <- 0
+noise1 <- 0.2
 tsize <- 4
 nsize <- 3
 darkcol <- '#28282e'
@@ -161,12 +161,12 @@ plothistogram <- function(data, title=""){
   mx <- max(h$count)
   text(x=0, y=-mx/15, "0", cex=nsize-1)
   text(x=1, y=-mx/15, "1", cex=nsize-1)
-  text(x=0.5, y=-mx/10, "Rank", cex=tsize-1)
+  text(x=0.5, y=-mx/10, "Normalized Rank", cex=tsize-1)
 
   mnr <- mean(data)
   score <- paste("MNR:", as.character(round(mnr, 2)))
   lines(c(mnr, mnr), c(0, mx+1), col="red", lwd=lweight)
-  text(x=0.5, y=mx+4, paste(title, score, sep="\n"), cex=nsize)
+  text(x=0.5, y=mx+(mx/3), paste(title, score, sep="\n"), cex=nsize)
 }
 ```
 
@@ -208,7 +208,7 @@ distances <- function(data, title=""){
   return(diff)
 }
 
-simulate_shape <- function(fn){
+simulate_shape <- function(fn, sampling){
   layout(matrix(c(1,2,3, 1,4,5, 1,6,7), 3, 3, byrow = TRUE))
   par(xpd=NA)
   shape <- fn()
@@ -233,7 +233,7 @@ simulate_shape <- function(fn){
   data <- array(data=NA, c(2, nsamples, nsims))
   dim(data)
   for (i in 1:nsims){
-    samp <- sample1(shape, nsamples)
+    samp <- sampling(shape, nsamples)
     if (i <= 3){
       plotshape(samp[[1]], samp[[2]], 'p')
       plotshape(samp[[1]], samp[[2]], 'l')
@@ -246,39 +246,41 @@ simulate_shape <- function(fn){
 }
 ```
 
-## Sampling shapes
+## 1-Sample Test-Statistic
+
+### Sampling Shapes
 
 We will start by sampling data from the circle distribution and reconstructing the shapes
 from each set of samples.
 
 ```{r circle_sampling, fig.align='center'}
-vals <- simulate_shape(circle)
+vals <- simulate_shape(circle, sample1)
 labels <- vals[[1]]
 data <- vals[[2]]
 ```
 
 The same process is then repeated for the square distribution.
 ```{r square_sampling, fig.align='center'}
-vals <- simulate_shape(square)
+vals <- simulate_shape(square, sample1)
 labels <- c(labels, vals[[1]])
 data <- abind(data, vals[[2]])
 ```
 
-## Compute distances
+### Compute distances
 Now we have a data matrix which contains `x` and `y` sampled values, and a list of labels
 for each sample identifying whether it belongs to the "circle" or "square" distribution.
 We can then compute the distance between observations in each class.
-```{r heatmap, fig.asp=1}
+```{r heatmap_1sample, fig.asp=1}
 print(labels)
 print(dim(data))
 
 diff <- distances(data, title="Distance (Method A)")
 ```
 
-## Rank distances
+### Rank distances
 Next, we can rank this matrix to observe the distances between objects in- and across-
 class, and compute the rank distribution function (rdf) of our processed data.
-```{r rankmatrix, fig.asp=1}
+```{r rankmatrix_1sample, fig.asp=1}
 rankmatrix <- apply(diff, 1, rank, ties.method="average") - 1
 plotheatmap(rankmatrix, "Rank Distance (Method A)")
 
@@ -286,3 +288,39 @@ ranks <- rdf(diff, labels)
 plothistogram(ranks, "Rank Distribution Function")
 ```
 
+## 2-Sample Test Statistic
+To use discriminability as a 2-sample test statistic, we simply need to repeat the process
+for a different sampling/processing, and compare the two statistics
+
+### Sampling Shapes
+Here, to illustrate a potentially worse strategy, we are forgetting to "align" the
+samples before constructing the shapes and them, for instance.
+```{r sampling_2sample, fig.show='none'}
+vals <- simulate_shape(circle, sample2)
+labels <- vals[[1]]
+data <- vals[[2]]
+
+vals <- simulate_shape(square, sample2)
+labels <- c(labels, vals[[1]])
+data <- abind(data, vals[[2]])
+```
+
+### Compute distances
+Just as before we compute distances (noticing this is quite a bit worse).
+```{r heatmap_2sample, fig.asp=1}
+print(labels)
+print(dim(data))
+
+diff <- distances(data, title="Distance (Method B)")
+```
+
+### Rank distances
+Ranking and computing the RDF will again illustrate that the method is worse than our
+previous method.
+```{r rankmatrix_2sample, fig.asp=1}
+rankmatrix <- apply(diff, 1, rank, ties.method="average") - 1
+plotheatmap(rankmatrix, "Rank Distance (Method B)")
+
+ranks <- rdf(diff, labels)
+plothistogram(ranks, "Rank Distribution Function")
+```
