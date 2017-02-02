@@ -43,7 +43,9 @@ noise1 <- 0.2
 tsize <- 4
 nsize <- 3
 darkcol <- '#28282e'
-lightcol <- '#98929e'
+medcol <- '#98929e'
+lightcol <- '#b8b2be'
+darkishcol <- '#48424e'
 ```
 
 ### Distribution functions
@@ -68,14 +70,14 @@ square <- function(){
 ### Plotting functions
 
 ```r
-plotshape <- function(xs, ys, typ){
+plotshape <- function(xs, ys, typ, cols=medcol){
   size <- lweight
   if (typ == 'p'){
     size <- size/3
   }
   plot(xs, ys, type=typ, axes=FALSE, xlab='', ylab='', pch=20, asp=1, lwd=size, xlim=c(-1, 1), col=darkcol)
   if (typ == 'l'){
-    polygon(x=xs, y=ys, col=lightcol)
+    polygon(x=xs, y=ys, col=cols)
   }
 }
 
@@ -140,46 +142,52 @@ sample1 <- function(data, n){
 ### Utility functions
 
 ```r
-distances <- function(data, title=""){
+distances <- function(data, title="", plot=FALSE){
   diff <- matrix(data=NA, nrow=2*nsims, ncol=2*nsims)
   for (i in 1:(2*nsims)){
     for (j in 1:(2*nsims)){
       diff[i,j] <- norm(data[,,i] - data[,,j], '2')
     }
   }
-  plotheatmap(diff, title=title)
+  if (plot) {
+    plotheatmap(diff, title=title)    
+  }
   return(diff)
 }
 
-simulate_shape <- function(fn, sampling){
+simulate_shape <- function(fn, sampling, plot=FALSE, cols=lightcol){
   layout(matrix(c(1,2,3, 1,4,5, 1,6,7), 3, 3, byrow = TRUE))
   par(xpd=NA)
   shape <- fn()
-  plotshape(shape[[1]], shape[[2]], 'l')
+  if (plot) {
+    plotshape(shape[[1]], shape[[2]], 'l', cols)
+    
+    arrows(x0=1.2, x1=2.2, y0=1, y1=1.5, length=0.1, lwd = lweight)
+    arrows(x0=1.3, x1=2.2, y0=0, y1=0, length=0.1, lwd = lweight)
+    arrows(x0=1.2, x1=2.2, y0=-1, y1=-1.5, length=0.1, lwd = lweight)
+    text(x=1.5, y=1.5, expression('s'[1]^'a'), cex=tsize)
+    text(x=1.7, y=0.3, expression('s'[2]^'a'), cex=tsize)
+    text(x=1.5, y=-1.5, expression('s'[3]^'a'), cex=tsize)
   
-  arrows(x0=1.2, x1=2.2, y0=1, y1=1.5, length=0.1, lwd = lweight)
-  arrows(x0=1.3, x1=2.2, y0=0, y1=0, length=0.1, lwd = lweight)
-  arrows(x0=1.2, x1=2.2, y0=-1, y1=-1.5, length=0.1, lwd = lweight)
-  text(x=1.5, y=1.5, expression('s'[1]^'a'), cex=tsize)
-  text(x=1.7, y=0.3, expression('s'[2]^'a'), cex=tsize)
-  text(x=1.5, y=-1.5, expression('s'[3]^'a'), cex=tsize)
-
-  arrows(x0=3.5, x1=4.8, y0=1.5, y1=1.5, length=0.1, lwd=lweight)
-  arrows(x0=3.5, x1=4.8, y0=0, y1=0, length=0.1, lwd=lweight)
-  arrows(x0=3.5, x1=4.8, y0=-1.5, y1=-1.5, length=0.1, lwd=lweight)
-
-  text(x=4.15, y=1.8, bquote(p[.(1)]^'a'), cex=tsize)
-  text(x=4.15, y=0.3, bquote(p[.(2)]^'a'), cex=tsize)
-  text(x=4.15, y=-1.2, bquote(p[.(3)]^'a'), cex=tsize)
+    arrows(x0=3.5, x1=4.8, y0=1.5, y1=1.5, length=0.1, lwd=lweight)
+    arrows(x0=3.5, x1=4.8, y0=0, y1=0, length=0.1, lwd=lweight)
+    arrows(x0=3.5, x1=4.8, y0=-1.5, y1=-1.5, length=0.1, lwd=lweight)
   
+    text(x=4.15, y=1.8, bquote(p[.(1)]^'a'), cex=tsize)
+    text(x=4.15, y=0.3, bquote(p[.(2)]^'a'), cex=tsize)
+    text(x=4.15, y=-1.2, bquote(p[.(3)]^'a'), cex=tsize)    
+  }
+
   label <- c()
   data <- array(data=NA, c(2, nsamples, nsims))
   dim(data)
   for (i in 1:nsims){
     samp <- sampling(shape, nsamples)
     if (i <= 3){
-      plotshape(samp[[1]], samp[[2]], 'p')
-      plotshape(samp[[1]], samp[[2]], 'l')
+      if (plot) {
+        plotshape(samp[[1]], samp[[2]], 'p')
+        plotshape(samp[[1]], samp[[2]], 'l')        
+      }
     }
     data[1, ,i] <- samp[[1]][1:nsamples]
     data[2, ,i] <- samp[[2]][1:nsamples]
@@ -198,7 +206,7 @@ from each set of samples.
 
 
 ```r
-vals <- simulate_shape(circle, sample1)
+vals <- simulate_shape(circle, sample1, plot=TRUE, lightcol)
 ```
 
 <figure><img src="./Figures/circle_sampling-1.png"><figcaption></figcaption></figure>
@@ -211,7 +219,7 @@ data <- vals[[2]]
 The same process is then repeated for the square distribution.
 
 ```r
-vals <- simulate_shape(square, sample1)
+vals <- simulate_shape(square, sample1, plot=TRUE, darkishcol)
 ```
 
 <figure><img src="./Figures/square_sampling-1.png"><figcaption></figcaption></figure>
@@ -243,7 +251,7 @@ print(dim(data))
 ```
 
 ```r
-diff <- distances(data, title="Distance (Method A)")
+diff <- distances(data, title="Distance (Method A)", plot=TRUE)
 ```
 
 <figure><img src="./Figures/heatmap_1sample-1.png"><figcaption></figcaption></figure>
@@ -276,20 +284,10 @@ samples before constructing the shapes and them, for instance.
 
 ```r
 vals <- simulate_shape(circle, sample2)
-```
-
-<figure><img src="./Figures/sampling_2sample-1.png"><figcaption></figcaption></figure>
-
-```r
 labels <- vals[[1]]
 data <- vals[[2]]
 
 vals <- simulate_shape(square, sample2)
-```
-
-<figure><img src="./Figures/sampling_2sample-2.png"><figcaption></figcaption></figure>
-
-```r
 labels <- c(labels, vals[[1]])
 data <- abind(data, vals[[2]])
 ```
@@ -314,7 +312,7 @@ print(dim(data))
 ```
 
 ```r
-diff <- distances(data, title="Distance (Method B)")
+diff <- distances(data, title="Distance (Method B)", plot=TRUE)
 ```
 
 <figure><img src="./Figures/heatmap_2sample-1.png"><figcaption></figcaption></figure>
