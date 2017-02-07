@@ -111,6 +111,20 @@ plothistogram <- function(data, title=""){
   lines(c(mnr, mnr), c(0, mx+1), col="red", lwd=lweight)
   text(x=0.5, y=mx+(mx/3), paste(title, score, sep="\n"), cex=nsize)
 }
+
+plotseries <- function(x, y, xlab, ylab, fn, title=""){
+  layout(1)
+  plot(x, y, type="l", xlab=xlab, ylab="", cex.lab=nsize-1, col="blue", axes=FALSE, lwd=lweight)
+  lines(x, y, col="black", type="p", lwd=lweight)
+
+  maxy = fn(y)
+  lines(c(x[y==maxy], x[y==maxy]), c(0, 1000), col="red", lwd=lweight)
+
+  axis(side=1, at=c(min(x), x[y==maxy], max(x)), lwd=lweight, cex.axis=nsize-1)
+  axis(side=2, at=c(min(y), max(y)), lwd=lweight, cex.axis=nsize-1)
+  shift <- (range(y)[2] - range(y)[1])*.05
+  text(x=(range(x)[2]+range(x)[1])/3, y=max(y)-shift, ylab, cex=tsize)
+}
 ```
 
 ### Sampling functions
@@ -155,7 +169,7 @@ distances <- function(data, title="", plot=FALSE){
   return(diff)
 }
 
-simulate_shape <- function(fn, sampling, plot=FALSE, cols=lightcol){
+simulate_shape <- function(fn, sampling, nsamples, plot=FALSE, cols=lightcol){
   layout(matrix(c(1,2,3, 1,4,5, 1,6,7), 3, 3, byrow = TRUE))
   par(xpd=NA)
   shape <- fn()
@@ -206,7 +220,7 @@ from each set of samples.
 
 
 ```r
-vals <- simulate_shape(circle, sample1, plot=TRUE, lightcol)
+vals <- simulate_shape(circle, sample1, nsamples, plot=TRUE, lightcol)
 ```
 
 <figure><img src="./Figures/circle_sampling-1.png"><figcaption></figcaption></figure>
@@ -219,7 +233,7 @@ data <- vals[[2]]
 The same process is then repeated for the square distribution.
 
 ```r
-vals <- simulate_shape(square, sample1, plot=TRUE, darkishcol)
+vals <- simulate_shape(square, sample1, nsamples, plot=TRUE, darkishcol)
 ```
 
 <figure><img src="./Figures/square_sampling-1.png"><figcaption></figcaption></figure>
@@ -283,11 +297,11 @@ Here, to illustrate a potentially worse strategy, we are forgetting to "align" t
 samples before constructing the shapes and them, for instance.
 
 ```r
-vals <- simulate_shape(circle, sample2)
+vals <- simulate_shape(circle, sample2, nsamples)
 labels <- vals[[1]]
 data <- vals[[2]]
 
-vals <- simulate_shape(square, sample2)
+vals <- simulate_shape(square, sample2, nsamples)
 labels <- c(labels, vals[[1]])
 data <- abind(data, vals[[2]])
 ```
@@ -334,3 +348,34 @@ plothistogram(ranks, "Rank Distribution Function")
 ```
 
 <figure><img src="./Figures/rankmatrix_2sample-2.png"><figcaption></figcaption></figure>
+
+### Scoring multiple operating points
+Performing this analysis as a k-sample test (i.e. score discriminability for multiple apps),
+we can pick the operating point that maximizes our discriminability score to be used for
+further investigation.
+
+```r
+samp <- c(  1,  2,    3,   4,   5,   6,   7,   8,   9,  10,  11,  12,  13,  14, 15,  16,  17,  18,  19,  20)
+mnrs <- c( .2, .31, .36, .47, .53, .58, .67, .78, .84, .92, .96, .97, .97, .99,  1, .99, .98, .97, .94, .89)
+plotseries(samp, mnrs, 'N Samples', 'MNR', max)
+```
+
+<figure><img src="./Figures/k_sample-1.png"><figcaption></figcaption></figure>
+
+### Performing a task with the optimal pipeline
+Using the pipeline that optimizes discriminability for a downstream inference task will also
+optimize performance on that task.
+
+```r
+mnrs <- c( .2, .31, .36, .47, .53, .58, .67, .78, .84, .92, .96, .97, .97, .99,  1, .99, .98, .97, .94, .89)
+loss <- c( 80,  53,  46,  43,  45,  34,  30,  23,  19,  12,   9,   6,   5,   3,  2, 2.5,   4,   7,   8,  11)
+
+sortz = order(mnrs, decreasing = FALSE)
+mnrs <- mnrs[sortz]
+loss <- loss[sortz]
+plotseries(mnrs, loss, 'MNR', 'Prediction\nLoss', min)
+```
+
+<figure><img src="./Figures/inference-1.png"><figcaption></figcaption></figure>
+
+
