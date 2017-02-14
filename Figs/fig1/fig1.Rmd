@@ -370,4 +370,16 @@ loss <- loss[sortz]
 plotseries(mnrs, loss, 'MNR', 'Prediction\nLoss', min)
 ```
 
+## Figure Caption
 
+Discriminability as a statistic for optimizing pipelines. When collecting and processing experimental data, a common
+objective is to differentiate between different classes of observations, both directly based on the processed data
+(i.e. shape) and recovering latent features of the distributions (i.e. colour). In order to evaluate and inform pipeline
+development, here taken to include both sampling and preprocessing, we can use discriminability as a 1-sample test. First,
+a distance computed between observations; second, the distances are ranked; third, the normalized rank distribution is
+computed, and; fourth, the mean of the rank distribution function is computed. Optimal discriminability, a score of 1, is
+achieved when of all observations from within a class are more similar to that of another class (i.e. all circles look
+more like all other circles than like squares, and vice versa). This process can be repeated for outputs of a different
+pipeline, and a 2-sample test can be performed to see which strategy is more discriminable. This can trivially be extended
+to a k-sample test, in which we compare k different processing strategies. Optimizing pipelines using discriminability will
+then minimize the error on downstream inference (i.e. colour prediction from shape) for any general inference task.
