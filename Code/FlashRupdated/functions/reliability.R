@@ -18,7 +18,7 @@ rdf <- function(dist, ids) {
   for (i in 1:N) {
     ind <- which(grepl(ids[i],ids)) # all the indices that are the same subject, but different scan
     for (j in ind) { 
-      if (!isTRUE(all.equal(j, i))) { # if j != i, then we want j to have a close distance to i, and estimate where it ranks 
+      if (j != i) { # if j != i, then we want j to have a close distance to i, and estimate where it ranks 
         di <- dist[i,] # get the entire ra for the particular scan
         di[ind] <- Inf # don't want to consider the particular scan itself
         d <- dist[i,j] # the distance between the particular scan of a subject and another scan of the subject
