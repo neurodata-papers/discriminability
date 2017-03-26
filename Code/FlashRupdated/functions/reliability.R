@@ -172,5 +172,35 @@ rdf_large_s_par <- function(dist, ids) {
 }
 
 
+rdf_cluster<- function(pwdist,K){
+K <- 2
+n <- dim(pwdist)[1]
+rkmat <- matrix(0,n,n)
+cl <- rep(1,n)
+cl[sample(n,n/2)] <- 2
+for (i in 1:n) {
+  di <- pwdist[i,-i]
+  rk <- rank(di, na.last = TRUE, ties.method = c("average"))
+  rkmat[i,-i] <- rk
+}
 
-
+rdif <- +Inf
+maxiter <- 50
+iter <- 1
+relpre <- mean(rdf_large_s(pwdist,cl)) 
+while(rdif > 10 ^ -7 & iter < maxiter ){
+  relv <- matrix(0,n,K)
+  for(i in 1:K){
+    lk <- rep(sum(cl==i),n) - (cl == i) 
+    rksumk <- rowSums(rkmat[,cl==i])
+    relk <- 1 - (rksumk - lk*(lk-1)/2) / (n-lk)/lk
+    relv[,i] <- relk
+  }
+  cl <- apply(relv,1,which.max)
+  relcur <- mean(rdf_large_s(pwdist,cl)) 
+  rdif <- relcur - relpre
+  relpre <- relcur
+  iter <- iter + 1
+}
+return(cl)
+}
