@@ -127,3 +127,50 @@ rdf_large_s <- function(dist, ids) {
   return(rdf[1:count-1])
 }
 
+
+rdf_large_s_par <- function(dist, ids) {
+  
+  require(foreach)
+  
+  N <- dim(dist)[1]
+  if (is.null((N))) {
+    stop('Invalid datatype for N')
+  }
+  
+  uniqids <- unique(as.character(ids))
+  countvec <- vector(mode="numeric",length=length(uniqids))
+  
+  for (i in 1:length(uniqids)) {
+    countvec[i] <- sum(grepl(uniqids[i], ids))
+  }
+  
+  l <- 0
+  
+  for(i in 1:length(uniqids)) {
+    l <- l + countvec[i] * (countvec[i] -1)
+  }
+
+
+  rdf<-foreach(i=1:N,.combine=c) %do% {
+    count <- 1
+    rdfN <- c()
+    ind <- which(grepl(ids[i],ids))
+    ind <- ind[which(ind != i)]
+    ind[ind > i] <- ind[ind > i] - 1
+    di <- dist[i,-i]
+    rk <- rank(di, na.last = TRUE, ties.method = c("average"))
+    rkind <- rk[ind]
+    ranks <- rank(rkind, na.last = TRUE, ties.method = c("first"))
+    li <- length(ind)
+    for (j in 1:li) {
+      rdfN[count] <- 1 - (rkind[j] - ranks[j]) / (N-li-1)
+      count <-  count + 1
+    }
+    rdfN
+  }
+  return(rdf)
+}
+
+
+
+
